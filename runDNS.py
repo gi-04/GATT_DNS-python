@@ -4,8 +4,6 @@
 
 import os
 import shutil
-import subprocess
-import time
 import numpy as np
 import scipy.io as sio
 from datetime import datetime
@@ -48,11 +46,7 @@ def runDNS(caseFile='parameters', extraParameters=None):
         p_col = 1
 
     # %% Add source code path
-    # Assuming source and source/boundaries are in the current directory
-    source_path = os.path.join(os.getcwd(), 'source')
-    boundaries_path = os.path.join(source_path, 'boundaries')
-    os.sys.path.append(source_path)
-    os.sys.path.append(boundaries_path)
+    # Assuming source and source/boundaries are in the Python path
 
     # %% Initialize log file
     if not os.path.exists(caseName):
@@ -60,25 +54,23 @@ def runDNS(caseFile='parameters', extraParameters=None):
 
     print(f'Parameters file: {caseFile}\nCase name: {caseName}')
 
-    log_file_path = os.path.join(caseName, 'log.txt')
-    if not os.path.exists(log_file_path):
-        with open(log_file_path, 'w') as logFile:
+    if not os.path.exists(f'{caseName}/log.txt'):
+        with open(f'{caseName}/log.txt', 'w') as logFile:
             logFile.write('Save number\tIteration\tSimulation time\tdt       \tCFL      \tU change\tV change\tW change\tR change\tE change')
             if 'trackedPoints' in mesh:
                 for i in range(len(mesh['trackedPoints'])):
-                    logFile.write(f'\tU{i}            \tV{i}            \tW{i}            \tR{i}            \tE{i}            ')
+                    logFile.write(f'\tU{i+1}            \tV{i+1}            \tW{i+1}            \tR{i+1}            \tE{i+1}            ')
             logFile.write('\n')
 
     # %% Run preprocessing routine or reload previous
-    bin_dir = os.path.join(caseName, 'bin')
-    if not os.path.exists(bin_dir):
-        os.makedirs(bin_dir)
+    if not os.path.exists(f'{caseName}/bin'):
+        os.makedirs(f'{caseName}/bin')
 
     if forceRecompileAll:
         compileCode = True
-        for file in os.listdir(bin_dir):
+        for file in os.listdir(f'{caseName}/bin'):
             if file.endswith('.mod') or file.endswith('.o'):
-                os.remove(os.path.join(bin_dir, file))
+                os.remove(os.path.join(f'{caseName}/bin', file))
 
     print('Running preprocessor')
     preprocessing()
@@ -89,47 +81,46 @@ def runDNS(caseFile='parameters', extraParameters=None):
     if genInitialFlow:  # If there is no previous run, generate new initial flow
         print('Generating new initial flow')
         # Compute initial flow
-        flow = generateInitialFlow(mesh, flowParameters, flowType['initial'], boundary['insideWall'])
+        flow = generateInitialFlow(mesh, flowParameters, flowType['initial'], boundary['insideWall'], flowType['name'])
 
         # Save initial flow to file
         flowToSave = flow
         flowToSave['t'] = 0
         for var in 'UVWRE':
             flowToSave[var][boundary['insideWall']] = np.nan
-        sio.savemat(os.path.join(caseName, 'flow_0000000000.mat'), flowToSave, do_compression=True)
+        sio.savemat(f'{caseName}/flow_0000000000.mat', flowToSave, do_compression=True)
 
         if 'meanFile' in flowType['initial']:
             flowTypeTemp = {'initial': {'type': 'file', 'flowFile': flowType['initial']['meanFile']}}
             if 'meshFile' in flowType['initial']:
                 flowTypeTemp['initial']['meshFile'] = flowType['initial']['meshFile']
 
-            meanFlow = generateInitialFlow(mesh, flowParameters, flowTypeTemp['initial'], boundary['insideWall'])
+            meanFlow = generateInitialFlow(mesh, flowParameters, flowTypeTemp['initial'], boundary['insideWall'], flowType['name'])
 
             # Save initial flow to file
             flowToSave = meanFlow
             flowToSave['t'] = 0
             for var in 'UVWRE':
                 flowToSave[var][boundary['insideWall']] = np.nan
-            sio.savemat(os.path.join(caseName, 'meanflowSFD.mat'), flowToSave, do_compression=True)
+            sio.savemat(f'{caseName}/meanflowSFD.mat', flowToSave, do_compression=True)
 
     else:
-        print(f'Resuming from file number {time.nStep}')
+        print(f'Resuming from file number {time["nStep"]}')
 
     # Copy parameters file to Fortran folder and write to log2.txt
-    log_file2_path = os.path.join(bin_dir, 'log2.txt')
-    with open(log_file2_path, 'a') as logFile2:
+    with open(f'{caseName}/bin/log2.txt', 'a') as logFile2:
         logFile2.write(f'DNS started at {datetime.now().strftime("%d-%b-%Y %H:%M:%S")}\n')
         logFile2.write(f'Parameters file: {caseFile}.py\n')
-        logFile2.write(f'Starting flow file: flow_{time.nStep:010d}.mat\n\n')
-        if os.path.exists(os.path.join(bin_dir, 'parameters.py')):
-            parametersDiffStatus, parametersDiff = subprocess.getstatusoutput(f'diff {os.path.join(bin_dir, "parameters.py")} {caseFile}.py')
+        logFile2.write(f'Starting flow file: flow_{time["nStep"]:010d}.mat\n\n')
+        if os.path.exists(f'{caseName}/bin/parameters.py'):
+            parametersDiffStatus, parametersDiff = os.system(f'diff {caseName}/bin/parameters.py {caseFile}.py')
             if parametersDiffStatus:
                 logFile2.write(f'Parameters file was changed:\n{parametersDiff}\n')
 
-    shutil.copyfile(caseFile + '.py', os.path.join(bin_dir, 'parameters.py'))
+    shutil.copy(f'{caseFile}.py', f'{caseName}/bin/parameters.py')
 
     if extraParameters is not None:
-        sio.savemat(os.path.join(bin_dir, 'extraParameters.mat'), extraParameters)
+        sio.savemat(f'{caseName}/bin/extraParameters.mat', extraParameters)
 
     # Compile code
     if compileCode:
@@ -144,40 +135,43 @@ def runDNS(caseFile='parameters', extraParameters=None):
     # %% Call Fortran code
     if runSimulation and not debugger and not profiler:
         print('Starting code')
-        start_time = time.time()
-        subprocess.run(f'cd {bin_dir} && mpirun -np {p_row * p_col} main {caseName}', shell=True)
-        print(f"Execution time: {time.time() - start_time} seconds")
+        start_time = datetime.now()
+        os.system(f'cd {caseName}/bin && mpirun -np {p_row * p_col} main {caseName}')
+        end_time = datetime.now()
+        print(f'Duration: {end_time - start_time}')
     elif runSimulation and debugger:
         print('Starting code with debugger')
-        subprocess.run(f'cd {bin_dir} && mpirun -n {p_row * p_col} xterm -sl 1000000 -fg white -bg black -hold -e gdb -ex run --args ./main {caseName}', shell=True)
+        os.system(f'cd {caseName}/bin && mpirun -n {p_row * p_col} xterm -sl 1000000 -fg white -bg black -hold -e gdb -ex run --args ./main {caseName}')
     elif runSimulation and profiler:
         print('Starting code with profiler')
-        os.environ['GMON_OUT_PREFIX'] = 'gmon.out'
-        start_time = time.time()
-        subprocess.run(f'cd {bin_dir} && mpirun -np {p_row * p_col} main {caseName}', shell=True)
-        print(f"Execution time: {time.time() - start_time} seconds")
-        subprocess.run(f'cd {bin_dir} && gprof -l main gmon.out > profile.txt', shell=True)
-        shutil.move(os.path.join(bin_dir, 'profile.txt'), '.')
+        os.system('export GMON_OUT_PREFIX="gmon.out"')
+        start_time = datetime.now()
+        os.system(f'cd {caseName}/bin && mpirun -np {p_row * p_col} main {caseName}')
+        end_time = datetime.now()
+        print(f'Duration: {end_time - start_time}')
+        os.system(f'cd {caseName}/bin && gprof -l main gmon.out > profile.txt')
+        shutil.move(f'{caseName}/bin/profile.txt', '.')
 
     # %% Write to log2 file
-    with open(log_file2_path, 'a') as logFile2:
+    with open(f'{caseName}/bin/log2.txt', 'a') as logFile2:
         logFile2.write(f'DNS finished at {datetime.now().strftime("%d-%b-%Y %H:%M:%S")}\n\n')
 
     # %% Get outputs if needed
     flowHandles = []
-    if 'flowHandles' in locals():
+    if nargout > 0:
         allCaseFiles = os.listdir(caseName)
         for name in allCaseFiles:
-            if len(name) == 19 and 'flow_' in name and name.endswith('.mat'):
-                flowHandles.append(sio.loadmat(os.path.join(caseName, name)))
+            if len(name) == 19 and re.match(r'flow_\d*.mat', name):
+                flowHandles.append(sio.loadmat(f'{caseName}/{name}'))
 
     info = {}
-    if 'info' in locals():
+    if nargout == 2:
         allVars = locals()
         for var in allVars:
             info[var] = allVars[var]
 
     return flowHandles, info
+
 
 def unpackStruct(structure):
     varList = []
