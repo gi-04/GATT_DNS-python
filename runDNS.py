@@ -2,11 +2,18 @@
 # This is the main file for the DNS
 # It will call all the other routines
 
+# Required python packages
 import os
 import shutil
 import numpy as np
 import scipy.io as sio
 from datetime import datetime
+import sys
+import matplotlib.pyplot as plt
+# Additional functions and files
+sys.path.insert(0,'./source')
+from parameters import *
+from preprocessing import *
 
 def runDNS(caseFile='parameters', extraParameters=None):
     # %% Define case file
@@ -33,7 +40,7 @@ def runDNS(caseFile='parameters', extraParameters=None):
     logAll = False  # Save all iterations to log or just when a flow is saved
 
     # %% Run parameters file
-    exec(open(caseFile + '.py').read())
+    # exec(open(caseFile + '.py').read())
 
     if extraParameters is not None:
         extraVars = unpackStruct(extraParameters)
@@ -183,6 +190,3 @@ def unpackStruct(structure):
         else:
             varList.append(varName)
     return varList
-
-
-

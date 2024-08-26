@@ -178,6 +178,3 @@ numMethods = {
         'applyY': False
     }
 }
-
-
-
