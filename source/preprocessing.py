@@ -1,50 +1,11 @@
 # This script is the main preprocessing routine, which will generate the mesh, prepare the boundaries, the matrices and write the Fortran files
 
+# Required python packages
 import os
 import scipy.io as sio
-
-# Define necessary functions (placeholders for actual implementations)
-def meshAddFixedPoints():
-    pass
-
-def generateMesh(xi, xf, x, axis):
-    pass
-
-def getBoundaryConditions(flowType, mesh, flowParameters, neumannOrders):
-    pass
-
-def getDomainSlices(n, p):
-    pass
-
-def initBoundaries(boundary, mesh, domainSlicesY, domainSlicesZ, p_row, p_col):
-    pass
-
-def makeMatrices(mesh, domain, boundary, numMethods):
-    pass
-
-def prepareThomas(matrix):
-    pass
-
-def getMatrixTypeBlocks(types, p_row, p_col):
-    pass
-
-def calcSFDregion():
-    pass
-
-def checkPreviousRun(caseName):
-    pass
-
-def writeFortranDisturbances(caseName, boundaryInfo, tridimensional):
-    pass
-
-def writeFortranParameters(caseName, mesh, flowParameters, time, numMethods, logAll, p_row, p_col):
-    pass
-
-def writeFortranMatrices(caseName, matrices, numMethods, mesh):
-    pass
-
-def writeFortranBoundaries(caseName, boundaryInfo):
-    pass
+# Additional functions and files
+from __main__ import *
+from meshAddFixedPoints import *
 
 # Generate mesh
 # Add fixed points to mesh structure
@@ -54,7 +15,6 @@ def writeFortranBoundaries(caseName, boundaryInfo):
 meshAddFixedPoints()
 
 # Run mesh generator
-mesh = {}
 mesh['X'], mesh['x'], mesh['nx'] = generateMesh(domain['xi'], domain['xf'], mesh['x'], 'X')
 mesh['Y'], mesh['y'], mesh['ny'] = generateMesh(domain['yi'], domain['yf'], mesh['y'], 'Y')
 mesh['Z'], mesh['z'], mesh['nz'] = generateMesh(domain['zi'], domain['zf'], mesh['z'], 'Z')
@@ -135,6 +95,3 @@ writeFortranBoundaries(caseName, boundaryInfo)
 # SFD
 if numMethods['SFD']['type'] == 2:
     sio.savemat(f"{caseName}/bin/SFD.mat", {'SFD_X': SFD_X})
-
-
-

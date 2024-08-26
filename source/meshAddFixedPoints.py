@@ -1,7 +1,12 @@
 # This script creates a list of interest points in the mesh. If mesh.matchFixed is true, the mesh will be slightly transformed to include these points
 
 import numpy as np
+from __main__ import *
+from parameters import *
 
+mesh = {'x': {},
+        'y': {},
+        'z': {}}
 mesh['x']['fixPoints'] = [0]
 mesh['y']['fixPoints'] = [0]
 mesh['z']['fixPoints'] = []
@@ -39,14 +44,14 @@ if 'trackedPoints' in mesh and 'fitTrackedPoints' in mesh and mesh['fitTrackedPo
         mesh['z']['fixPoints'].append(point[2])
 
 # Remove duplicates and sort the fixPoints
-mesh['x']['fixPoints'] = sorted(set(mesh['x']['fixPoints']))
-mesh['y']['fixPoints'] = sorted(set(mesh['y']['fixPoints']))
-mesh['z']['fixPoints'] = sorted(set(mesh['z']['fixPoints']))
+# mesh['x']['fixPoints'] = sorted(set(mesh['x']['fixPoints'])) # (conversões originais; não funcionaram)
+# mesh['y']['fixPoints'] = sorted(set(mesh['y']['fixPoints']))
+# mesh['z']['fixPoints'] = sorted(set(mesh['z']['fixPoints']))
+mesh['x']['fixPoints'] = np.unique(mesh['x']['fixPoints'])
+mesh['y']['fixPoints'] = np.unique(mesh['y']['fixPoints'])
+mesh['z']['fixPoints'] = np.unique(mesh['z']['fixPoints'])
 
 # Remove points that are out of the domain or are infinite
 mesh['x']['fixPoints'] = [x for x in mesh['x']['fixPoints'] if not np.isinf(x) and domain['xi'] <= x <= domain['xf']]
 mesh['y']['fixPoints'] = [y for y in mesh['y']['fixPoints'] if not np.isinf(y) and domain['yi'] <= y <= domain['yf']]
 mesh['z']['fixPoints'] = [z for z in mesh['z']['fixPoints'] if not np.isinf(z) and domain['zi'] <= z <= domain['zf']]
-
-
-
