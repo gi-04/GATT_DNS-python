@@ -1,0 +1,18 @@
+lista dos arquivos modificados até o momento. entende-se como não modificados os scripts que não sofreram edições desde o momento da tradução
+
+./runDNS.py
+./parameters.py
+./source/preprocessing.py
+./source/meshAddFixedPoints.py
+./source/getBoundaryConditions.py
+./source/getDomainSlices.py
+./source/makeMatrices.py
+./source/findDerivativeRegions.py
+./source/spatialFilterCoefficients.py
+./source/prepareThomas.py
+./source/checkPreviousRun.py
+./source/writeFortranDisturbances.py
+./source/writeFortranParameters.py
+./source/writeFortranMatrices.py
+./source/writeFortranBoundaries.py
+./source/compileFortran.py

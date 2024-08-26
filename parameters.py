@@ -69,13 +69,13 @@ mesh = {
         'attractorPoints': [],
         'attractorStrength': [],
         'attractorSize': [],
-        'attractorRegions': [
+        'attractorRegions': np.array((               # array usado aqui por causa de um conflito em generateMesh (gigiaero - 26/08/2024)
             [x1-100, x1-50, x2+50, x2+100, 3],
             [x1-20, x1, x2+10, x2+20, 16],
             [x2-5, x2-0.1, x2, x2+2, 30],
             [x1-2, x1, x1+0.1, x1+5, 20],
             [-30, -10, 10, 30, 1]
-        ],
+        )),
         'matchFixed': 2,
         'periodic': False,
         'fixPeriodicDomainSize': False,

@@ -1,4 +1,4 @@
-def get_domain_slices(n, p):
+def getDomainSlices(n, p):
     """
     This function computes the size of each slice the same way the 2decomp library does.
     It is used to correctly distribute the info across the processes.

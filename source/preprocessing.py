@@ -6,13 +6,27 @@ import scipy.io as sio
 # Additional functions and files
 from __main__ import *
 from meshAddFixedPoints import *
+from generateMesh import generateMesh
+from getBoundaryConditions import getBoundaryConditions
+from getDomainSlices import getDomainSlices
+from initBoundaries import initBoundaries
+from makeMatrices import makeMatrices
+from prepareThomas import prepareThomas
+from getMatrixTypeBlocks import getMatrixTypeBlocks
+from calcSFDregion import calcSFDRegion
+from checkPreviousRun import checkPreviousRun
+from writeFortranDisturbances import writeFortranDisturbances
+from writeFortranParameters import writeFortranParameters
+from writeFortranMatrices import writeFortranMatrices
+from writeFortranBoundaries import writeFortranBoundaries
+
 
 # Generate mesh
 # Add fixed points to mesh structure
 # The mesh will be slightly transformed so that key points are present at
 # the correct positions if mesh.x.matchFixed = true
 # X = 0 and Y = 0 are always added
-meshAddFixedPoints()
+# meshAddFixedPoints() # isto não parece ser necessário tendo em vista a importação acima [gigiaero - 26/08/2024]
 
 # Run mesh generator
 mesh['X'], mesh['x'], mesh['nx'] = generateMesh(domain['xi'], domain['xf'], mesh['x'], 'X')
@@ -48,7 +62,7 @@ if not os.path.exists(caseName):
 # Prepare SFD
 if 'SFD' in numMethods:
     if numMethods['SFD']['type'] == 2:
-        calcSFDregion()
+        numMethods,SFD_X =  calcSFDRegion(mesh,numMethods)
     if numMethods['SFD']['Delta'] == float('inf'):
         numMethods['SFD']['Delta'] = -1
     if numMethods['SFD']['type'] > 0 and (os.path.exists(f"{caseName}/meanflowSFD.mat") or 'meanFile' in flowType['initial']):

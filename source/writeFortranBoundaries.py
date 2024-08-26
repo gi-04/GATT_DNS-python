@@ -1,18 +1,18 @@
-def write_fortran_boundaries(case_name, bi):
+def writeFortranBoundaries(case_name, bi):
     """
     This function writes the boundaryInfo.F90 file, it has the data for all boundary conditions for each domain slice
     """
     import numpy as np
 
-    n_procs = len(bi)
+    nProcs = len(bi)
 
-    with open(f'{case_name}/bin/boundaryInfo.F90', 'w') as out_file:
-        out_file.write('    select case (nrank)\n')
+    with open(f'{case_name}/bin/boundaryInfo.F90', 'w') as outFile:
+        outFile.write('    select case (nrank)\n')
 
         vars = ['U', 'V', 'W', 'E', 'P']
 
-        for i in range(n_procs):
-            out_file.write(f'        case ({i})\n')
+        for i in range(nProcs):
+            outFile.write(f'        case ({i})\n')
 
             # Dirichlet
             for j, var in enumerate(vars):
@@ -37,17 +37,17 @@ def write_fortran_boundaries(case_name, bi):
                     ind = bi[i]['iPd']
                     val = bi[i]['vPd']
 
-                out_file.write(f'            n{var}d = {n}\n')
+                outFile.write(f'            n{var}d = {n}\n')
 
                 if n > 0:
-                    out_file.write(f'            allocate(i{var}d({n},6))\n')
-                    out_file.write(f'            allocate(v{var}d({n}))\n')
+                    outFile.write(f'            allocate(i{var}d({n},6))\n')
+                    outFile.write(f'            allocate(v{var}d({n}))\n')
 
-                    out_file.write(f'            i{var}d = reshape((/')
-                    out_file.write(','.join(map(str, ind[:-1])) + f',{ind[-1]}/),shape(i{var}d))\n')
+                    outFile.write(f'            i{var}d = reshape((/')
+                    outFile.write(','.join(map(str, ind[:-1])) + f',{ind[-1]}/),shape(i{var}d))\n')
 
-                    out_file.write(f'            v{var}d = (/')
-                    out_file.write(','.join(f'{v:.20f}d0' for v in val[:-1]) + f',{val[-1]:.20f}d0/)\n\n')
+                    outFile.write(f'            v{var}d = (/')
+                    outFile.write(','.join(f'{v:.20f}d0' for v in val[:-1]) + f',{val[-1]:.20f}d0/)\n\n')
 
             # Neumann
             for j, var in enumerate(vars):
@@ -72,20 +72,20 @@ def write_fortran_boundaries(case_name, bi):
                     ind = bi[i]['iPn']
                     dir = bi[i]['dPn']
 
-                out_file.write(f'            n{var}n = {n}\n')
+                outFile.write(f'            n{var}n = {n}\n')
 
                 if n > 0:
-                    out_file.write(f'            allocate(i{var}n({n},6))\n')
-                    out_file.write(f'            allocate(d{var}n({n}))\n')
+                    outFile.write(f'            allocate(i{var}n({n},6))\n')
+                    outFile.write(f'            allocate(d{var}n({n}))\n')
 
-                    out_file.write(f'            i{var}n = reshape((/')
-                    out_file.write(','.join(map(str, ind[:-1])) + f',{ind[-1]}/),shape(i{var}n))\n')
+                    outFile.write(f'            i{var}n = reshape((/')
+                    outFile.write(','.join(map(str, ind[:-1])) + f',{ind[-1]}/),shape(i{var}n))\n')
 
-                    out_file.write(f'            d{var}n = (/')
-                    out_file.write(','.join(map(str, dir[:-1])) + f',{dir[-1]}/)\n\n')
+                    outFile.write(f'            d{var}n = (/')
+                    outFile.write(','.join(map(str, dir[:-1])) + f',{dir[-1]}/)\n\n')
                 else:
-                    out_file.write(f'            allocate(i{var}n(1,6))\n')
-                    out_file.write(f'            allocate(d{var}n(1))\n\n')
+                    outFile.write(f'            allocate(i{var}n(1,6))\n')
+                    outFile.write(f'            allocate(d{var}n(1))\n\n')
 
             # Second derivative
             for j, var in enumerate(vars):
@@ -110,38 +110,38 @@ def write_fortran_boundaries(case_name, bi):
                     ind = bi[i]['iPs']
                     dir = bi[i]['dPs']
 
-                out_file.write(f'            n{var}s = {n}\n')
+                outFile.write(f'            n{var}s = {n}\n')
 
                 if n > 0:
-                    out_file.write(f'            allocate(i{var}s({n},6))\n')
-                    out_file.write(f'            allocate(d{var}s({n}))\n')
+                    outFile.write(f'            allocate(i{var}s({n},6))\n')
+                    outFile.write(f'            allocate(d{var}s({n}))\n')
 
-                    out_file.write(f'            i{var}s = reshape((/')
-                    out_file.write(','.join(map(str, ind[:-1])) + f',{ind[-1]}/),shape(i{var}s))\n')
+                    outFile.write(f'            i{var}s = reshape((/')
+                    outFile.write(','.join(map(str, ind[:-1])) + f',{ind[-1]}/),shape(i{var}s))\n')
 
-                    out_file.write(f'            d{var}s = (/')
-                    out_file.write(','.join(map(str, dir[:-1])) + f',{dir[-1]}/)\n\n')
+                    outFile.write(f'            d{var}s = (/')
+                    outFile.write(','.join(map(str, dir[:-1])) + f',{dir[-1]}/)\n\n')
                 else:
-                    out_file.write(f'            allocate(i{var}s(1,6))\n')
-                    out_file.write(f'            allocate(d{var}s(1))\n\n')
+                    outFile.write(f'            allocate(i{var}s(1,6))\n')
+                    outFile.write(f'            allocate(d{var}s(1))\n\n')
 
             # Corners
-            out_file.write(f'            cN = {bi[i]["cN"]}\n')
-            out_file.write(f'            allocate(cL({max(bi[i]["cN"], 1)},6))\n')
-            out_file.write(f'            allocate(cD({max(bi[i]["cN"], 1)},3))\n')
-            out_file.write(f'            allocate(cAdiabatic({max(bi[i]["cN"], 1)}))\n')
+            outFile.write(f'            cN = {bi[i]["cN"]}\n')
+            outFile.write(f'            allocate(cL({max(bi[i]["cN"], 1)},6))\n')
+            outFile.write(f'            allocate(cD({max(bi[i]["cN"], 1)},3))\n')
+            outFile.write(f'            allocate(cAdiabatic({max(bi[i]["cN"], 1)}))\n')
 
             if bi[i]['cN'] > 0:
-                out_file.write(f'            cL = reshape((/')
-                out_file.write(','.join(map(str, bi[i]['cL'][:-1])) + f',{bi[i]["cL"][-1]}/),shape(cL))\n')
+                outFile.write(f'            cL = reshape((/')
+                outFile.write(','.join(map(str, bi[i]['cL'][:-1])) + f',{bi[i]["cL"][-1]}/),shape(cL))\n')
 
-                out_file.write(f'            cD = reshape((/')
-                out_file.write(','.join(map(str, bi[i]['cD'][:-1])) + f',{bi[i]["cD"][-1]}/),shape(cD))\n')
+                outFile.write(f'            cD = reshape((/')
+                outFile.write(','.join(map(str, bi[i]['cD'][:-1])) + f',{bi[i]["cD"][-1]}/),shape(cD))\n')
 
-                out_file.write(f'            cAdiabatic = (/')
-                out_file.write(','.join(map(str, bi[i]['adiabatic'][:-1])) + f',{bi[i]["adiabatic"][-1]}/)\n\n')
+                outFile.write(f'            cAdiabatic = (/')
+                outFile.write(','.join(map(str, bi[i]['adiabatic'][:-1])) + f',{bi[i]["adiabatic"][-1]}/)\n\n')
 
-        out_file.write('    end select\n')
+        outFile.write('    end select\n')
 
 
 

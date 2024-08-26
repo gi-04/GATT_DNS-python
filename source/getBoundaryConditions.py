@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-def get_boundary_conditions(flowType, mesh, flowParameters, neumannOrder):
+def getBoundaryConditions(flowType, mesh, flowParameters, neumannOrder):
     # This function runs the relevant routine for the flowType defined in the parameters and outputs the variables in a structure
     # The disturbances are also added to the structure
     # The stencil and coefficients for Neumann conditions is defined here

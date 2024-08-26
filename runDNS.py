@@ -14,6 +14,9 @@ import matplotlib.pyplot as plt
 sys.path.insert(0,'./source')
 from parameters import *
 from preprocessing import *
+from generateMesh import generateMesh
+from compileFortran import compileFortran
+from plotDomain import plotDomain
 
 def runDNS(caseFile='parameters', extraParameters=None):
     # %% Define case file
@@ -132,11 +135,11 @@ def runDNS(caseFile='parameters', extraParameters=None):
     # Compile code
     if compileCode:
         print('Compiling code')
-        compileFortran()
+        compileFortran(caseName,decompDir,optimizeCode,debugger,profiler,displayCompiling)
 
     # %% Plot domain
     if plotDNSDomain:
-        plotDomain()
+        plotDomain(mesh,boundary)
         plt.draw()
 
     # %% Call Fortran code

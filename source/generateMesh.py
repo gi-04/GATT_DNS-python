@@ -108,15 +108,20 @@ def generateMesh(xi, xf, mesh, direction):
         eta = np.ones(100 * mesh['n'])
         for i in range(len(mesh['attractorPoints'])):
             eta += mesh['attractorStrength'][i] * np.exp(-((xBase - mesh['attractorPoints'][i]) / mesh['attractorSize'][i]) ** 2)
-        if 'attractorRegions' in mesh:
-            for i in range(mesh['attractorRegions'].shape[0]):
-                nodePositions = mesh['attractorRegions'][i, :4]
-                if np.isinf(nodePositions[1]):
-                    nodePositions[:2] = [xi - 2, xi - 1]
-                if np.isinf(nodePositions[3]):
-                    nodePositions[2:] = [xf + 1, xf + 2]
-                nodePositions = np.concatenate(([nodePositions[0] - 1], nodePositions, [nodePositions[3] + 1]))
-                eta += mesh['attractorRegions'][i, 4] * interp.pchip_interpolate(nodePositions, [0, 0, 1, 1, 0, 0], xBase) ** 2
+
+        # por ora decidi retirar todo este trecho porque, investigando as funções até aqui, não me parece que
+        # o campo atractorRegions pode vir a existir em mesh, e sim apenas em mesh.x ou mesh.y - gigiaero (28/06/2024)
+        # if 'attractorRegions' in mesh:
+        #     for i in range(len(mesh['attractorRegions'])):            # troca do shape() por len() (gigiaero - 26/08/2024)
+        #         nodePositions = mesh['attractorRegions'][i, :4]
+        #         if np.isinf(nodePositions[1]):
+        #             nodePositions[:2] = [xi - 2, xi - 1]
+        #         if np.isinf(nodePositions[3]):
+        #             nodePositions[2:] = [xf + 1, xf + 2]
+        #         nodePositions = np.concatenate(([nodePositions[0] - 1], nodePositions, [nodePositions[3] + 1]))
+        #         eta += mesh['attractorRegions'][i, 4] * interp.pchip_interpolate(nodePositions, [0, 0, 1, 1, 0, 0], xBase) ** 2
+
+
         eta = np.cumsum(eta)
         eta = eta - eta[0]
         eta = (mesh['n'] - 1) * eta / eta[-1] + 1

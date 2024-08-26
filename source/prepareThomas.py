@@ -148,6 +148,8 @@ def prepareThomas(matrix):
     matrix['nRHSf'] = nDiagsf
     matrix['nTypes'] = nTypes
 
+    return matrix
+
 def fullDiag(M, k):
     """
     Extracts the k-th diagonal from each 2D slice of a 3D array M.

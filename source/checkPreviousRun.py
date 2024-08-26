@@ -2,7 +2,7 @@ import os
 import re
 import scipy.io
 
-def check_previous_run(case_name):
+def checkPreviousRun(case_name):
     """
     This function checks for previous run files.
     case_name is the folder to be checked.
@@ -11,31 +11,25 @@ def check_previous_run(case_name):
     If no files are found, empty arrays are returned.
     """
     
-    all_files = os.listdir(case_name)  # List all files
+    allFiles = os.listdir(case_name)  # List all files
 
-    case_files = []  # Flow file will be placed here
+    caseFiles = []  # Flow file will be placed here
 
-    for name in all_files:
+    for name in allFiles:
         if len(name) == 19 and re.search(r'flow_\d*.mat', name):  # Check the file name
-            case_files.append(name)
+            caseFiles.append(name)
 
-    if not case_files:
+    if not caseFiles:
         return [], [], [], []
 
-    n_steps = [int(re.search(r'\d+', name).group()) for name in case_files]
+    nSteps = [int(re.search(r'\d+', name).group()) for name in caseFiles]
 
-    n_step = max(n_steps)
+    nStep = max(nSteps)
 
-    if n_step:
-        file_path = os.path.join(case_name, f'flow_{n_step:010d}.mat')
-        file_object = scipy.io.loadmat(file_path)
-        nx, ny, nz = file_object['U'].shape
-        return n_step, nx, ny, nz
+    if nStep:
+        filePath = os.path.join(case_name, f'flow_{nStep:010d}.mat')
+        fileObject = scipy.io.loadmat(filePath)
+        nx, ny, nz = fileObject['U'].shape
+        return nStep, nx, ny, nz
 
-    return n_step, [], [], []
-
-# Example usage:
-# nStep, nx, ny, nz = check_previous_run('case_folder')
-
-
-
+    return nStep, [], [], []

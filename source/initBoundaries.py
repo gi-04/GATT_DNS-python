@@ -1,7 +1,7 @@
 
 import numpy as np
 
-def init_boundaries(boundary, mesh, domain_slices_y, domain_slices_z, p_row, p_col):
+def initBoundaries(boundary, mesh, domain_slices_y, domain_slices_z, p_row, p_col):
     # This function initializes the boundary conditions to the domain
     # Before running the DNS, it should be called with the boundary structure
     # as input
