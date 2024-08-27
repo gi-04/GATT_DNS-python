@@ -2,6 +2,7 @@ lista dos arquivos modificados até o momento. entende-se como não modificados 
 
 ./runDNS.py
 ./parameters.py
+
 ./source/preprocessing.py
 ./source/meshAddFixedPoints.py
 ./source/getBoundaryConditions.py
@@ -16,3 +17,10 @@ lista dos arquivos modificados até o momento. entende-se como não modificados 
 ./source/writeFortranMatrices.py
 ./source/writeFortranBoundaries.py
 ./source/compileFortran.py
+./source/generateInitialFlow.py
+
+./source/Boundaries/boundaryLayerAdiabatic.py
+
+
+[notas]
+-pra buscar uma palavra-chave em todos os scripts: grep -r "[palavra]" [diretório]

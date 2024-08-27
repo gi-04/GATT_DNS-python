@@ -1,8 +1,13 @@
+# Required python packages
 import numpy as np
 from scipy.interpolate import interp1d, griddata
 from scipy.integrate import solve_ivp
+from scipy.io import loadmat
+# ADditional functions and files
+from calcCompressibleBL import calcCompressibleBL
+from checkPreviousRun import checkPreviousRun
 
-def generate_initial_flow(mesh, flow_parameters, initial_flow, walls, flow_name):
+def generateInitialFlow(mesh, flowParameters, initialFlow, walls, flow_name):
     # This function defines each type of initial flow. New types may be added here if needed
 
     nx = mesh['nx']
@@ -13,13 +18,13 @@ def generate_initial_flow(mesh, flow_parameters, initial_flow, walls, flow_name)
     Y = mesh['Y']
     Z = mesh['Z']
 
-    gamma = flow_parameters['gamma']
-    Ma = flow_parameters['Ma']
-    Re = flow_parameters['Re']
+    gamma = flowParameters['gamma']
+    Ma = flowParameters['Ma']
+    Re = flowParameters['Re']
 
     E0 = 1 / ((gamma**2 - gamma) * Ma**2)
 
-    if initial_flow['type'] == 'uniform':
+    if initialFlow['type'] == 'uniform':
         
         U = np.ones((nx, ny, nz))
         V = np.zeros((nx, ny, nz))
@@ -29,13 +34,13 @@ def generate_initial_flow(mesh, flow_parameters, initial_flow, walls, flow_name)
         
         y0ind = np.argmin(np.abs(Y))
         
-        if len(initial_flow) == 4 or 'boundaryLayer' in flow_name:
+        if len(initialFlow) == 4 or 'boundaryLayer' in flow_name:
             U[:, :y0ind, :] = 0
         
-        if 'U0' in initial_flow:
-            U = initial_flow['U0'] * U
+        if 'U0' in initialFlow:
+            U = initialFlow['U0'] * U
         
-    elif initial_flow['type'] == 'poiseuille':
+    elif initialFlow['type'] == 'poiseuille':
         
         U = np.zeros((nx, ny, nz))
         V = np.zeros((nx, ny, nz))
@@ -45,13 +50,13 @@ def generate_initial_flow(mesh, flow_parameters, initial_flow, walls, flow_name)
 
         eta = (Y - Y[0]) / (Y[-1] - Y[0])
 
-        u0 = flow_parameters['U0']
-        u1 = flow_parameters['lowerWallVelocity']
-        u2 = flow_parameters['upperWallVelocity']
+        u0 = flowParameters['U0']
+        u1 = flowParameters['lowerWallVelocity']
+        u2 = flowParameters['upperWallVelocity']
 
         U += (-6 * u0 + 3 * u1 + 3 * u2) * eta**2 + (6 * u0 - 4 * u1 - 2 * u2) * eta + u1
 
-    elif initial_flow['type'] == 'blasius':
+    elif initialFlow['type'] == 'blasius':
 
         ybl = np.arange(0, 10.0001, 0.0001)
         ubl = blasius(ybl)
@@ -73,18 +78,18 @@ def generate_initial_flow(mesh, flow_parameters, initial_flow, walls, flow_name)
         # The value of blasiusFit defines the maximum slope of Y0 for the blasius profile
 
         Y0 = np.zeros(nx)
-        if 'blasiusFit' in initial_flow:
+        if 'blasiusFit' in initialFlow:
             walls2D = np.any(walls, axis=2)
             for i in range(nx):
                 Y0[i] = Y[np.where(walls2D[i, :] == 0)[0][0]]
             for i in range(1, nx):
                 dx = X[i] - X[i - 1]
-                if Y0[i - 1] - Y0[i] > dx * initial_flow['blasiusFit']:
-                    Y0[i] = Y0[i - 1] - dx * initial_flow['blasiusFit']
+                if Y0[i - 1] - Y0[i] > dx * initialFlow['blasiusFit']:
+                    Y0[i] = Y0[i - 1] - dx * initialFlow['blasiusFit']
             for i in range(nx - 1, 0, -1):
                 dx = X[i + 1] - X[i]
-                if Y0[i + 1] - Y0[i] > dx * initial_flow['blasiusFit']:
-                    Y0[i] = Y0[i + 1] - dx * initial_flow['blasiusFit']
+                if Y0[i + 1] - Y0[i] > dx * initialFlow['blasiusFit']:
+                    Y0[i] = Y0[i + 1] - dx * initialFlow['blasiusFit']
 
         for i in range(nx):
             xi = X[i]
@@ -98,53 +103,53 @@ def generate_initial_flow(mesh, flow_parameters, initial_flow, walls, flow_name)
 
         U = np.repeat(U[:, :, np.newaxis], nz, axis=2)
         
-    elif initial_flow['type'] == 'compressibleBL_isothermal':
-        compressible_bl_flow = calc_compressible_bl(flow_parameters, False, mesh)
+    elif initialFlow['type'] == 'compressibleBL_isothermal':
+        compressibleBL_flow = calcCompressibleBL(flowParameters, False, mesh)
 
-        U = compressible_bl_flow['U']
-        V = compressible_bl_flow['V']
-        W = compressible_bl_flow['W']
-        E = compressible_bl_flow['E']
-        R = compressible_bl_flow['R']
+        U = compressibleBL_flow['U']
+        V = compressibleBL_flow['V']
+        W = compressibleBL_flow['W']
+        E = compressibleBL_flow['E']
+        R = compressibleBL_flow['R']
 
-    elif initial_flow['type'] == 'compressibleBL_adiabatic':
-        compressible_bl_flow = calc_compressible_bl(flow_parameters, True, mesh)
+    elif initialFlow['type'] == 'compressibleBL_adiabatic':
+        compressibleBL_flow = calcCompressibleBL(flowParameters, True, mesh)
 
-        U = compressible_bl_flow['U']
-        V = compressible_bl_flow['V']
-        W = compressible_bl_flow['W']
-        E = compressible_bl_flow['E']
-        R = compressible_bl_flow['R']
+        U = compressibleBL_flow['U']
+        V = compressibleBL_flow['V']
+        W = compressibleBL_flow['W']
+        E = compressibleBL_flow['E']
+        R = compressibleBL_flow['R']
 
-    elif initial_flow['type'] == 'file':
+    elif initialFlow['type'] == 'file':
         
         # If a folder is given, find the last flow file inside it
-        if initial_flow['flowFile'][-1] == '/':
-            nStep = check_previous_run(initial_flow['flowFile'][:-1])
+        if initialFlow['flowFile'][-1] == '/':
+            nStep = checkPreviousRun(initialFlow['flowFile'][:-1])
             if nStep:
-                initial_flow['flowFile'] = f"{initial_flow['flowFile']}flow_{nStep:010d}.mat"
+                initialFlow['flowFile'] = f"{initialFlow['flowFile']}flow_{nStep:010d}.mat"
             else:
-                initial_flow['flowFile'] = f"{initial_flow['flowFile']}baseflow.mat"
+                initialFlow['flowFile'] = f"{initialFlow['flowFile']}baseflow.mat"
 
-        flow_file = loadmat(initial_flow['flowFile'])
+        flowFile = loadmat(initialFlow['flowFile'])
         
         # If a mesh file is given, interpolate from it
-        if 'meshFile' in initial_flow:
+        if 'meshFile' in initialFlow:
 
             # If a folder is given, use the mesh file inside it
-            if initial_flow['meshFile'][-1] == '/':
-                initial_flow['meshFile'] += 'mesh.mat'
+            if initialFlow['meshFile'][-1] == '/':
+                initialFlow['meshFile'] += 'mesh.mat'
 
-            mesh_file = loadmat(initial_flow['meshFile'])
-            Xfile = mesh_file['X']
-            Yfile = mesh_file['Y']
-            Zfile = mesh_file['Z']
+            meshFile = loadmat(initialFlow['meshFile'])
+            Xfile = meshFile['X']
+            Yfile = meshFile['Y']
+            Zfile = meshFile['Z']
             
-            Ufile = flow_file['U']
-            Vfile = flow_file['V']
-            Wfile = flow_file['W']
-            Rfile = flow_file['R']
-            Efile = flow_file['E']
+            Ufile = flowFile['U']
+            Vfile = flowFile['V']
+            Wfile = flowFile['W']
+            Rfile = flowFile['R']
+            Efile = flowFile['E']
             
             # Change NaNs to default values
             Ufile[np.isnan(Ufile)] = 0
@@ -177,20 +182,20 @@ def generate_initial_flow(mesh, flow_parameters, initial_flow, walls, flow_name)
                 E = griddata((Xfile.flatten(), Yfile.flatten(), Zfile.flatten()), Efile.flatten(), (Xmesh, Ymesh, Zmesh), method='linear')
             
             # Change Mach number if needed
-            if 'changeMach' in initial_flow and initial_flow['changeMach']:
-                if mesh_file['flowParameters']['Ma'] != Ma:
-                    print(f'Initial flow file has a Mach number of {mesh_file["flowParameters"]["Ma"]} which will be changed to {Ma} to match the current simulation')
-                    E *= mesh_file['flowParameters']['Ma']**2 / Ma**2
+            if 'changeMach' in initialFlow and initialFlow['changeMach']:
+                if meshFile['flowParameters']['Ma'] != Ma:
+                    print(f'Initial flow file has a Mach number of {meshFile["flowParameters"]["Ma"]} which will be changed to {Ma} to match the current simulation')
+                    E *= meshFile['flowParameters']['Ma']**2 / Ma**2
 
         else:
             # If no mesh file is given, just load the values and check the size
-            U = flow_file['U']
+            U = flowFile['U']
             if nx != U.shape[0] or ny != U.shape[1] or (nz != U.shape[2] and U.shape[2] != 1):
                 raise ValueError(f'Mesh size in initial flow file is not consistent with current mesh ({U.shape[0]}x{U.shape[1]}x{U.shape[2]} -> {nx}x{ny}x{nz})\nConsider changing the parameters file or providing a mesh file')
-            V = flow_file['V']
-            W = flow_file['W']
-            R = flow_file['R']
-            E = flow_file['E']
+            V = flowFile['V']
+            W = flowFile['W']
+            R = flowFile['R']
+            E = flowFile['E']
             
             # If the mesh provided was 2D and the case is 3D, replicate it
             if nz == 1 and U.shape[2]:
@@ -200,31 +205,31 @@ def generate_initial_flow(mesh, flow_parameters, initial_flow, walls, flow_name)
                 R = np.repeat(R[:, :, np.newaxis], nz, axis=2)
                 E = np.repeat(E[:, :, np.newaxis], nz, axis=2)
         
-    if 'addNoise' in initial_flow:
+    if 'addNoise' in initialFlow:
 
-        if 'noiseType' not in initial_flow or initial_flow['noiseType'] == 'rand':
-            noiseU = initial_flow['addNoise'] * np.random.randn(nx, ny, nz)
-            noiseV = initial_flow['addNoise'] * np.random.randn(nx, ny, nz)
-            noiseW = initial_flow['addNoise'] * np.random.randn(nx, ny, nz)
-            noiseR = initial_flow['addNoise'] * np.random.randn(nx, ny, nz)
-            noiseE = initial_flow['addNoise'] * np.random.randn(nx, ny, nz)
-        elif initial_flow['noiseType'] == 'uniform':
-            noiseU = initial_flow['addNoise'] * np.ones((nx, ny, nz))
-            noiseV = initial_flow['addNoise'] * np.ones((nx, ny, nz))
-            noiseW = initial_flow['addNoise'] * np.ones((nx, ny, nz))
-            noiseR = initial_flow['addNoise'] * np.ones((nx, ny, nz))
-            noiseE = initial_flow['addNoise'] * np.ones((nx, ny, nz))
+        if 'noiseType' not in initialFlow or initialFlow['noiseType'] == 'rand':
+            noiseU = initialFlow['addNoise'] * np.random.randn(nx, ny, nz)
+            noiseV = initialFlow['addNoise'] * np.random.randn(nx, ny, nz)
+            noiseW = initialFlow['addNoise'] * np.random.randn(nx, ny, nz)
+            noiseR = initialFlow['addNoise'] * np.random.randn(nx, ny, nz)
+            noiseE = initialFlow['addNoise'] * np.random.randn(nx, ny, nz)
+        elif initialFlow['noiseType'] == 'uniform':
+            noiseU = initialFlow['addNoise'] * np.ones((nx, ny, nz))
+            noiseV = initialFlow['addNoise'] * np.ones((nx, ny, nz))
+            noiseW = initialFlow['addNoise'] * np.ones((nx, ny, nz))
+            noiseR = initialFlow['addNoise'] * np.ones((nx, ny, nz))
+            noiseE = initialFlow['addNoise'] * np.ones((nx, ny, nz))
 
-        if 'noiseCenter' in initial_flow:
-            if 'noiseSigma' not in initial_flow:
-                initial_flow['noiseSigma'] = [(X[-1] - X[0])**2 / 10, (Y[-1] - Y[0])**2 / 10, (Z[-1] - Z[0])**2 / 10]
-            x0 = initial_flow['noiseCenter'][0]
-            y0 = initial_flow['noiseCenter'][1]
-            z0 = initial_flow['noiseCenter'][2]
+        if 'noiseCenter' in initialFlow:
+            if 'noiseSigma' not in initialFlow:
+                initialFlow['noiseSigma'] = [(X[-1] - X[0])**2 / 10, (Y[-1] - Y[0])**2 / 10, (Z[-1] - Z[0])**2 / 10]
+            x0 = initialFlow['noiseCenter'][0]
+            y0 = initialFlow['noiseCenter'][1]
+            z0 = initialFlow['noiseCenter'][2]
             
-            sigmaX = initial_flow['noiseSigma'][0]
-            sigmaY = initial_flow['noiseSigma'][1]
-            sigmaZ = initial_flow['noiseSigma'][2]
+            sigmaX = initialFlow['noiseSigma'][0]
+            sigmaY = initialFlow['noiseSigma'][1]
+            sigmaZ = initialFlow['noiseSigma'][2]
         else:
             x0 = 0
             y0 = 0

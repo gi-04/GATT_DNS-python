@@ -24,6 +24,9 @@ def getBoundaryConditions(flowType, mesh, flowParameters, neumannOrder):
     zf = []  # Ending k index for the condition
 
     ## Check the type of boundaries and call the appropriate subroutine
+    '''
+    lembrete: trocar isso por uma chamada de função    
+    '''
     boundary_file = os.path.join('source', 'boundaries', f"{flowType['name']}.py")
     if os.path.exists(boundary_file):
         exec(open(boundary_file).read())

@@ -5,7 +5,7 @@ import subprocess
 
 # transformei este script em uma função (gigiaero - 26/08/2024)
 
-def compileFortran(caseName,decompDir,optimizeCode,debugger,profiler,displayCompiling):
+def compileFortran(caseName,decompDir,optimizeCode,debugger,profiler,displayCompiling,matlabDir):
 
     # Create extra makefile with the directories that are specific to this run
     out_file_path = os.path.join(caseName, 'bin', 'makefile_extra')
