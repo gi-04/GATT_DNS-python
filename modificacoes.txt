@@ -2,6 +2,7 @@ lista dos arquivos modificados até o momento. entende-se como não modificados 
 
 ./runDNS.py
 ./parameters.py
+
 ./source/preprocessing.py
 ./source/meshAddFixedPoints.py
 ./source/getBoundaryConditions.py
@@ -16,3 +17,26 @@ lista dos arquivos modificados até o momento. entende-se como não modificados 
 ./source/writeFortranMatrices.py
 ./source/writeFortranBoundaries.py
 ./source/compileFortran.py
+./source/generateInitialFlow.py
+./source/findWallsForBoundaries.py
+
+./source/Boundaries/boundaryLayerAdiabatic.py
+./source/Boundaries/boundaryLayerFreeSlip.py
+./source/Boundaries/boundaryLayerFreeIsothermal.py
+./source/Boundaries/boundaryLayerFreeIsothermalPressureInlet.py
+./source/Boundaries/boundaryLayerIsothermalSymmZ.py
+./source/Boundaries/lidDrivenFlow.py
+./source/Boundaries/periodicBox.py
+./source/Boundaries/poiseuilleFlow.py
+
+
+
+[notas]
+-pra buscar uma palavra-chave em todos os scripts: grep -r "[palavra]" [diretório]
+-ignorei o arquivo ./source/Boundaries/boundaryLayerIsothermalOld.py
+-o tradutor que usei colocou comentarios que originalmente nao existiam  em alguns lugares
+
+[pontos a checar melhor]
+./source/Boundaries/BoundaryLayerAdiabatic.py  -  em "add flat plate"
+./source/Boundaries/BoundaryLayerIsothermal.py  -  mesmo que acima
+./source/Boundaries/BoudaryLayerIsothermalPressureInlet.py  -  mesmo que acima

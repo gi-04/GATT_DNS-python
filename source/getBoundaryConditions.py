@@ -1,5 +1,7 @@
 import numpy as np
-import os
+# import os
+import sys
+sys.path.insert(0,'./source/Boundaries')
 
 def getBoundaryConditions(flowType, mesh, flowParameters, neumannOrder):
     # This function runs the relevant routine for the flowType defined in the parameters and outputs the variables in a structure
@@ -23,10 +25,47 @@ def getBoundaryConditions(flowType, mesh, flowParameters, neumannOrder):
     zi = []  # Starting k index for the condition
     zf = []  # Ending k index for the condition
 
+    # troquei este trecho por chamadas de funcao porque, como mencionei em runDNS.py, essa execucao do
+    # script nao funciona quando ja dentro de uma funcao (gigiaero - 29/08/2024)
     ## Check the type of boundaries and call the appropriate subroutine
-    boundary_file = os.path.join('source', 'boundaries', f"{flowType['name']}.py")
-    if os.path.exists(boundary_file):
-        exec(open(boundary_file).read())
+    # boundary_file = os.path.join('source', 'boundaries', f"{flowType['name']}.py")
+    # if os.path.exists(boundary_file):
+        # exec(open(boundary_file).read())
+
+    if flowType['name'] == 'boundaryLayerAdiabatic':
+        # isolei as importacoes das funcoes seguintes porque imagino que otimize o codigo. 
+        # ou sera que o ideal seria importar tudo no incio mesmo? (gigiaero - 29/08/2024)
+        from boundaryLayerAdiabatic import boundaryLayerAdiabatic
+        var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,flowRegion,corners,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits = boundaryLayerAdiabatic(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0)
+    
+    elif flowType['name'] == 'boundaryLayerFreeSlip':
+        from boundaryLayerFreeSlip import boundaryLayerFreeSlip
+        var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,flowRegion,corners,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits = boundaryLayerFreeSlip(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0)
+    
+    elif flowType['name'] == 'boundaryLayerIsothermal':
+        from boundaryLayerIsothermal import boundaryLayerIsothermal
+        var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,flowRegion,corners,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits = boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0)
+
+    elif flowType['name'] == 'boundaryLayerIsothermalPressureInlet':
+        from boundaryLayerIsothermalPressureInlet import boundaryLayerIsothermalPressureInlet
+        var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,flowRegion,corners,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits = boundaryLayerIsothermalPressureInlet(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0)
+    
+    elif flowType['name'] == 'boundaryLayerIsothermalSymmZ':
+        from boundaryLayerIsothermalSymmZ import boundaryLayerIsothermalSymmZ
+        var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,flowRegion,corners,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits = boundaryLayerIsothermalSymmZ(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0)
+    
+    elif flowType['name'] == 'lidDrivenFlow':
+        from lidDrivenFlow import lidDrivenFlow
+        var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,flowRegion,corners,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits = lidDrivenFlow(mesh,var,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0)
+
+    elif flowType['name'] == 'periodicBox':
+        from periodicBox import periodicBox
+        var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,flowRegion,corners,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits = periodicBox(mesh)
+
+    elif flowType['name'] == 'poiseulleFlow':
+        from poiseulleFlow import poiseulleFlow
+        var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,flowRegion,corners,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits = poiseulleFlow(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0,flowParameters)
+
     else:
         raise FileNotFoundError('Boundary condition file not found, check source/boundaries folder')
 
@@ -133,7 +172,7 @@ def getBoundaryConditions(flowType, mesh, flowParameters, neumannOrder):
 
                 boundary['disturb'].append(disturb_info)
 
-    return boundary, mesh
+    return boundary,mesh,corners,flowType
 
 
 

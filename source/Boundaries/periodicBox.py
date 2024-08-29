@@ -1,13 +1,15 @@
 
 import numpy as np
+from findWallsForBoundaries import findWallsForBoundaries
 
-# Subroutine for a periodic box
-# To be called from getBoundaryConditions
+def periodicBox(mesh):
 
-# Assuming mesh is a predefined object with attributes nx, ny, and nz
-flowRegion = np.ones((mesh.nx, mesh.ny, mesh.nz), dtype=bool)
+    # Subroutine for a periodic box
+    # To be called from getBoundaryConditions
 
-# Assuming findWallsForBoundaries is a function defined elsewhere
-findWallsForBoundaries()
+    flowRegion = np.ones((mesh.nx, mesh.ny, mesh.nz), dtype=bool)
 
+    corners,_,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits = findWallsForBoundaries(flowRegion,mesh)
+
+    return corners,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits
 

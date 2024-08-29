@@ -4,8 +4,8 @@
 import os
 import scipy.io as sio
 # Additional functions and files
-from __main__ import *
-from meshAddFixedPoints import *
+# from __main__ import *
+from meshAddFixedPoints import meshAddFixedPoints
 from generateMesh import generateMesh
 from getBoundaryConditions import getBoundaryConditions
 from getDomainSlices import getDomainSlices
@@ -20,92 +20,97 @@ from writeFortranParameters import writeFortranParameters
 from writeFortranMatrices import writeFortranMatrices
 from writeFortranBoundaries import writeFortranBoundaries
 
+# transformei este script em uma função (gigiaero - 27/08/2024)
 
-# Generate mesh
-# Add fixed points to mesh structure
-# The mesh will be slightly transformed so that key points are present at
-# the correct positions if mesh.x.matchFixed = true
-# X = 0 and Y = 0 are always added
-# meshAddFixedPoints() # isto não parece ser necessário tendo em vista a importação acima [gigiaero - 26/08/2024]
+def preprocessing(mesh,flowType,flowParameters,domain,numMethods,tridimensional,p_row,p_col,logAll,caseName):
 
-# Run mesh generator
-mesh['X'], mesh['x'], mesh['nx'] = generateMesh(domain['xi'], domain['xf'], mesh['x'], 'X')
-mesh['Y'], mesh['y'], mesh['ny'] = generateMesh(domain['yi'], domain['yf'], mesh['y'], 'Y')
-mesh['Z'], mesh['z'], mesh['nz'] = generateMesh(domain['zi'], domain['zf'], mesh['z'], 'Z')
+    # Generate mesh
+    # Add fixed points to mesh structure
+    # The mesh will be slightly transformed so that key points are present at
+    # the correct positions if mesh.x.matchFixed = true
+    # X = 0 and Y = 0 are always added
+    mesh = meshAddFixedPoints(mesh,flowType,domain)
 
-# Select boundary conditions
-boundary, mesh = getBoundaryConditions(flowType, mesh, flowParameters, [numMethods['neumannOrder'], numMethods['neumann2Order']])
+    # Run mesh generator
+    mesh['X'], mesh['x'], mesh['nx'] = generateMesh(domain['xi'], domain['xf'], mesh['x'], 'X')
+    mesh['Y'], mesh['y'], mesh['ny'] = generateMesh(domain['yi'], domain['yf'], mesh['y'], 'Y')
+    mesh['Z'], mesh['z'], mesh['nz'] = generateMesh(domain['zi'], domain['zf'], mesh['z'], 'Z')
 
-domainSlicesY = getDomainSlices(mesh['ny'], p_row)
-domainSlicesZ = getDomainSlices(mesh['nz'], p_col)
+    # Select boundary conditions
+    boundary, mesh = getBoundaryConditions(flowType, mesh, flowParameters, [numMethods['neumannOrder'], numMethods['neumann2Order']])
 
-boundaryInfo = initBoundaries(boundary, mesh, domainSlicesY, domainSlicesZ, p_row, p_col)
+    domainSlicesY = getDomainSlices(mesh['ny'], p_row)
+    domainSlicesZ = getDomainSlices(mesh['nz'], p_col)
 
-# Make matrices for spatial derivatives and for spatial filters
-matrices = makeMatrices(mesh, domain, boundary, numMethods)
+    boundaryInfo = initBoundaries(boundary, mesh, domainSlicesY, domainSlicesZ, p_row, p_col)
 
-matrices['x'] = prepareThomas(matrices['x'])
-matrices['x']['blocks'] = getMatrixTypeBlocks(matrices['x']['types'], p_row, p_col)
-matrices['y'] = prepareThomas(matrices['y'])
-matrices['y']['blocks'] = getMatrixTypeBlocks(matrices['y']['types'], p_row, p_col)
-if mesh['nz'] > 1:
-    matrices['z'] = prepareThomas(matrices['z'])
-    matrices['z']['blocks'] = getMatrixTypeBlocks(matrices['z']['types'], p_row, p_col)
+    # Make matrices for spatial derivatives and for spatial filters
+    matrices = makeMatrices(mesh, domain, boundary, numMethods)
 
-matrices['neumannCoeffs'] = boundary['neumannCoeffs']
-matrices['neumann2Coeffs'] = boundary['neumann2Coeffs']
+    matrices['x'] = prepareThomas(matrices['x'])
+    matrices['x']['blocks'] = getMatrixTypeBlocks(matrices['x']['types'], p_row, p_col)
+    matrices['y'] = prepareThomas(matrices['y'])
+    matrices['y']['blocks'] = getMatrixTypeBlocks(matrices['y']['types'], p_row, p_col)
+    if mesh['nz'] > 1:
+        matrices['z'] = prepareThomas(matrices['z'])
+        matrices['z']['blocks'] = getMatrixTypeBlocks(matrices['z']['types'], p_row, p_col)
 
-# Write files
-if not os.path.exists(caseName):
-    os.makedirs(caseName)
+    matrices['neumannCoeffs'] = boundary['neumannCoeffs']
+    matrices['neumann2Coeffs'] = boundary['neumann2Coeffs']
 
-# Prepare SFD
-if 'SFD' in numMethods:
-    if numMethods['SFD']['type'] == 2:
-        numMethods,SFD_X =  calcSFDRegion(mesh,numMethods)
-    if numMethods['SFD']['Delta'] == float('inf'):
-        numMethods['SFD']['Delta'] = -1
-    if numMethods['SFD']['type'] > 0 and (os.path.exists(f"{caseName}/meanflowSFD.mat") or 'meanFile' in flowType['initial']):
-        if 'resume' not in numMethods['SFD']:
-            numMethods['SFD']['resume'] = 1
+    # Write files
+    if not os.path.exists(caseName):
+        os.makedirs(caseName)
+
+    # Prepare SFD
+    if 'SFD' in numMethods:
+        if numMethods['SFD']['type'] == 2:
+            numMethods,SFD_X =  calcSFDRegion(mesh,numMethods)
+        if numMethods['SFD']['Delta'] == float('inf'):
+            numMethods['SFD']['Delta'] = -1
+        if numMethods['SFD']['type'] > 0 and (os.path.exists(f"{caseName}/meanflowSFD.mat") or 'meanFile' in flowType['initial']):
+            if 'resume' not in numMethods['SFD']:
+                numMethods['SFD']['resume'] = 1
+        else:
+            numMethods['SFD']['resume'] = 0
+
+    # Mesh file
+    X = mesh['X']
+    Y = mesh['Y']
+    Z = mesh['Z']
+    wall = boundary['insideWall']
+    sio.savemat(f"{caseName}/mesh.mat", {'X': X, 'Y': Y, 'Z': Z, 'wall': wall, 'flowParameters': flowParameters, 'flowType': flowType})
+
+    # Check for previous save files
+    if 'runningLST' not in globals():
+        nStep, nx, ny, nz = checkPreviousRun(caseName)
+        if nStep:
+            genInitialFlow = False
+            time['nStep'] = nStep
+            if (nx != mesh['nx'] or ny != mesh['ny'] or nz != mesh['nz']):
+                raise ValueError(f"Mesh size has changed since last run: Parameters file indicates {mesh['nx']}x{mesh['ny']}x{mesh['nz']} but mat file contains data for {nx}x{ny}x{nz}")
+        else:
+            genInitialFlow = True
+            time['nStep'] = 0
     else:
+        genInitialFlow = False
+        time['nStep'] = 0
         numMethods['SFD']['resume'] = 0
 
-# Mesh file
-X = mesh['X']
-Y = mesh['Y']
-Z = mesh['Z']
-wall = boundary['insideWall']
-sio.savemat(f"{caseName}/mesh.mat", {'X': X, 'Y': Y, 'Z': Z, 'wall': wall, 'flowParameters': flowParameters, 'flowType': flowType})
+    # Fortran files
+    if not os.path.exists(f"{caseName}/bin"):
+        os.makedirs(f"{caseName}/bin")
 
-# Check for previous save files
-if 'runningLST' not in globals():
-    nStep, nx, ny, nz = checkPreviousRun(caseName)
-    if nStep:
-        genInitialFlow = False
-        time['nStep'] = nStep
-        if (nx != mesh['nx'] or ny != mesh['ny'] or nz != mesh['nz']):
-            raise ValueError(f"Mesh size has changed since last run: Parameters file indicates {mesh['nx']}x{mesh['ny']}x{mesh['nz']} but mat file contains data for {nx}x{ny}x{nz}")
-    else:
-        genInitialFlow = True
-        time['nStep'] = 0
-else:
-    genInitialFlow = False
-    time['nStep'] = 0
-    numMethods['SFD']['resume'] = 0
+    writeFortranDisturbances(caseName, boundaryInfo, tridimensional)
 
-# Fortran files
-if not os.path.exists(f"{caseName}/bin"):
-    os.makedirs(f"{caseName}/bin")
+    writeFortranParameters(caseName, mesh, flowParameters, time, numMethods, logAll, p_row, p_col)
 
-disturbTypes = writeFortranDisturbances(caseName, boundaryInfo, tridimensional)
+    writeFortranMatrices(caseName, matrices, numMethods, mesh)
 
-writeFortranParameters(caseName, mesh, flowParameters, time, numMethods, logAll, p_row, p_col)
+    writeFortranBoundaries(caseName, boundaryInfo)
 
-writeFortranMatrices(caseName, matrices, numMethods, mesh)
+    # SFD
+    if numMethods['SFD']['type'] == 2:
+        sio.savemat(f"{caseName}/bin/SFD.mat", {'SFD_X': SFD_X})
 
-writeFortranBoundaries(caseName, boundaryInfo)
-
-# SFD
-if numMethods['SFD']['type'] == 2:
-    sio.savemat(f"{caseName}/bin/SFD.mat", {'SFD_X': SFD_X})
+    return mesh,boundary,genInitialFlow

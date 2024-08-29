@@ -1,5 +1,7 @@
 import os
 
+# na versão original em matlab, disturbTypes é retornada como saída da função, mas ela não parece ser usada em qualquer outro lugar (gigiaero - 27/08/2024) 
+
 def writeFortranDisturbances(case_name, bi, tridimensional):
     """
     This function creates the runDisturbances.F90 and disturbances.F90 files.
