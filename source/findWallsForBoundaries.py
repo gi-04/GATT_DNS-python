@@ -13,6 +13,7 @@ def findWallsForBoundaries(flowRegion,mesh):
 
     # Find and remove infinitelly thin walls
     # in x
+    # esses indices nao fazem sentido comparando com a versao original do codigo (gigiaero - 03/09/2024)
     flowRegion[:, 1:-1, :] |= (flowRegion[:, :-2, :] & flowRegion[:, 2:, :])
 
     # in y
@@ -22,29 +23,31 @@ def findWallsForBoundaries(flowRegion,mesh):
     flowRegion[1:-1, :, :] |= (flowRegion[:-2, :, :] & flowRegion[2:, :, :])
 
     # Find walls
-    wallFront = np.diff(flowRegion, axis=1) == 1
-    wallBack = np.diff(flowRegion, axis=1) == -1
+    # parecem estar faltando algumas linhas aqui, mas optei por nao mexer por ora exceto na configuracao
+    # dos eixos - onde estava axis=1 deixei axis=0 e assim em diante (gigiaero - 03/09/2024)
+    wallFront = np.diff(flowRegion, axis=0) == 1
+    wallBack = np.diff(flowRegion, axis=0) == -1
 
-    wallUp = np.diff(flowRegion, axis=2) == 1
-    wallDown = np.diff(flowRegion, axis=2) == -1
+    wallUp = np.diff(flowRegion, axis=1) == 1
+    wallDown = np.diff(flowRegion, axis=1) == -1
 
-    wallRight = np.diff(flowRegion, axis=3) == 1
-    wallLeft = np.diff(flowRegion, axis=3) == -1
+    wallRight = np.diff(flowRegion, axis=2) == 1
+    wallLeft = np.diff(flowRegion, axis=2) == -1
 
     # Find regions for boundaries in walls
     # In x
     wallFrontLimits = []
     wallBackLimits = []
 
-    for i in range(mesh.nx):
+    for i in range(mesh['nx']):
         localWall = wallFront[i, :, :]  # Find front facing walls
         if np.any(localWall):
-            for k in range(mesh.nz):
+            for k in range(mesh['nz']):
                 if k == 0 or not wallStarts:  # Get starting and ending points in y
                     wallStarts = np.where([localWall[0, 0, k], np.diff(localWall[0, :, k], axis=1) == 1])[0]
                     wallEnds = np.where([np.diff(localWall[0, :, k], axis=1) == -1, localWall[0, -1, k]])[0]
                     kStart = k
-                if k == mesh.nz - 1 or np.any(localWall[0, :, k] != localWall[0, :, k + 1]):  # If reached end in z or wall change, record boundary
+                if k == mesh['nz'] - 1 or np.any(localWall[0, :, k] != localWall[0, :, k + 1]):  # If reached end in z or wall change, record boundary
                     for j in range(len(wallStarts)):
                         wallFrontLimits.append([i, i, wallStarts[j], wallEnds[j], kStart, kStart + 1])
                     wallStarts = []
@@ -52,12 +55,12 @@ def findWallsForBoundaries(flowRegion,mesh):
 
         localWall = wallBack[i, :, :]  # Find down facing walls
         if np.any(localWall):
-            for k in range(mesh.nz):
+            for k in range(mesh['nz']):
                 if k == 0 or not wallStarts:  # Get starting and ending points in y
                     wallStarts = np.where([localWall[0, 0, k], np.diff(localWall[0, :, k], axis=1) == 1])[0]
                     wallEnds = np.where([np.diff(localWall[0, :, k], axis=1) == -1, localWall[0, -1, k]])[0]
                     kStart = k
-                if k == mesh.nz - 1 or np.any(localWall[0, :, k] != localWall[0, :, k + 1]):  # If reached end in z or wall change, record boundary
+                if k == mesh['nz'] - 1 or np.any(localWall[0, :, k] != localWall[0, :, k + 1]):  # If reached end in z or wall change, record boundary
                     for j in range(len(wallStarts)):
                         wallBackLimits.append([i, i, wallStarts[j], wallEnds[j], kStart, kStart + 1])
                     wallStarts = []
@@ -67,15 +70,15 @@ def findWallsForBoundaries(flowRegion,mesh):
     wallUpLimits = []
     wallDownLimits = []
 
-    for j in range(mesh.ny):
+    for j in range(mesh['ny']):
         localWall = wallUp[:, j, :]  # Find front facing walls
         if np.any(localWall):
-            for k in range(mesh.nz):
+            for k in range(mesh['nz']):
                 if k == 0 or not wallStarts:  # Get starting and ending points in x
                     wallStarts = np.where([localWall[0, 0, k], np.diff(localWall[:, 0, k], axis=0) == 1])[0]
                     wallEnds = np.where([np.diff(localWall[:, 0, k], axis=0) == -1, localWall[-1, 0, k]])[0]
                     kStart = k
-                if k == mesh.nz - 1 or np.any(localWall[:, 0, k] != localWall[:, 0, k + 1]):  # If reached end in z or wall change, record boundary
+                if k == mesh['nz'] - 1 or np.any(localWall[:, 0, k] != localWall[:, 0, k + 1]):  # If reached end in z or wall change, record boundary
                     for i in range(len(wallStarts)):
                         wallUpLimits.append([wallStarts[i], wallEnds[i], j, j, kStart, kStart + 1])
                     wallStarts = []
@@ -83,12 +86,12 @@ def findWallsForBoundaries(flowRegion,mesh):
 
         localWall = wallDown[:, j, :]  # Find front facing walls
         if np.any(localWall):
-            for k in range(mesh.nz):
+            for k in range(mesh['nz']):
                 if k == 0 or not wallStarts:  # Get starting and ending points in x
                     wallStarts = np.where([localWall[0, 0, k], np.diff(localWall[:, 0, k], axis=0) == 1])[0]
                     wallEnds = np.where([np.diff(localWall[:, 0, k], axis=0) == -1, localWall[-1, 0, k]])[0]
                     kStart = k
-                if k == mesh.nz - 1 or np.any(localWall[:, 0, k] != localWall[:, 0, k + 1]):  # If reached end in z or wall change, record boundary
+                if k == mesh['nz'] - 1 or np.any(localWall[:, 0, k] != localWall[:, 0, k + 1]):  # If reached end in z or wall change, record boundary
                     for i in range(len(wallStarts)):
                         wallDownLimits.append([wallStarts[i], wallEnds[i], j, j, kStart, kStart + 1])
                     wallStarts = []
@@ -98,15 +101,15 @@ def findWallsForBoundaries(flowRegion,mesh):
     wallRightLimits = []
     wallLeftLimits = []
 
-    for k in range(mesh.nz):
+    for k in range(mesh['nz']):
         localWall = wallRight[:, :, k]  # Find left facing walls
         if np.any(localWall):
-            for i in range(mesh.nx):
+            for i in range(mesh['nx']):
                 if i == 0 or not wallStarts:  # Get starting and ending points in z
                     wallStarts = np.where([localWall[i, 0, 0], np.diff(localWall[i, :, 0], axis=1) == 1])[0]
                     wallEnds = np.where([np.diff(localWall[i, :, 0], axis=1) == -1, localWall[i, -1, 0]])[0]
                     iStart = i
-                if i == mesh.nx - 1 or np.any(localWall[i, :, 0] != localWall[i + 1, :, 0]):  # If reached end in x or wall change, record boundary
+                if i == mesh['nx'] - 1 or np.any(localWall[i, :, 0] != localWall[i + 1, :, 0]):  # If reached end in x or wall change, record boundary
                     for j in range(len(wallStarts)):
                         wallRightLimits.append([iStart, iStart + 1, wallStarts[j], wallEnds[j], k, k + 1])
                     wallStarts = []
@@ -114,12 +117,12 @@ def findWallsForBoundaries(flowRegion,mesh):
 
         localWall = wallLeft[:, :, k]  # Find right facing walls
         if np.any(localWall):
-            for i in range(mesh.nx):
+            for i in range(mesh['nx']):
                 if i == 0 or not wallStarts:  # Get starting and ending points in z
                     wallStarts = np.where([localWall[i, 0, 0], np.diff(localWall[i, :, 0], axis=1) == 1])[0]
                     wallEnds = np.where([np.diff(localWall[i, :, 0], axis=1) == -1, localWall[i, -1, 0]])[0]
                     iStart = i
-                if i == mesh.nx - 1 or np.any(localWall[i, :, 0] != localWall[i + 1, :, 0]):  # If reached end in x or wall change, record boundary
+                if i == mesh['nx'] - 1 or np.any(localWall[i, :, 0] != localWall[i + 1, :, 0]):  # If reached end in x or wall change, record boundary
                     for j in range(len(wallStarts)):
                         wallLeftLimits.append([iStart, iStart + 1, wallStarts[j], wallEnds[j], k, k + 1])
                     wallStarts = []
@@ -153,15 +156,15 @@ def findWallsForBoundaries(flowRegion,mesh):
 
     # With 2 walls
     # Constant z
-    cornersMatrix = np.zeros((mesh.nx, mesh.ny, mesh.nz, 4), dtype=bool)
+    cornersMatrix = np.zeros((mesh['nx'], mesh['ny'], mesh['nz'], 4), dtype=bool)
     cornersMatrix[:, :, :, 0] = wallFront & wallUp
     cornersMatrix[:, :, :, 1] = wallFront & wallDown
     cornersMatrix[:, :, :, 2] = wallBack & wallUp
     cornersMatrix[:, :, :, 3] = wallBack & wallDown
     cornerDirections = np.array([[1, 1, 0], [1, -1, 0], [-1, 1, 0], [-1, -1, 0]])
 
-    for i in range(mesh.nx):
-        for j in range(mesh.ny):
+    for i in range(mesh['nx']):
+        for j in range(mesh['ny']):
             for m in range(4):
                 cornerRow = cornersMatrix[i, j, :, m]
                 if np.any(cornerRow):
@@ -172,15 +175,15 @@ def findWallsForBoundaries(flowRegion,mesh):
                         corners["dir"].append(cornerDirections[m])
 
     # Constant x
-    cornersMatrix = np.zeros((mesh.nx, mesh.ny, mesh.nz, 4), dtype=bool)
+    cornersMatrix = np.zeros((mesh['nx'], mesh['ny'], mesh['nz'], 4), dtype=bool)
     cornersMatrix[:, :, :, 0] = wallFront & wallRight
     cornersMatrix[:, :, :, 1] = wallFront & wallLeft
     cornersMatrix[:, :, :, 2] = wallBack & wallRight
     cornersMatrix[:, :, :, 3] = wallBack & wallLeft
     cornerDirections = np.array([[1, 0, 1], [1, 0, -1], [-1, 0, 1], [-1, 0, -1]])
 
-    for i in range(mesh.nx):
-        for k in range(mesh.nz):
+    for i in range(mesh['nx']):
+        for k in range(mesh['nz']):
             for m in range(4):
                 cornerRow = cornersMatrix[i, :, k, m]
                 if np.any(cornerRow):
@@ -191,15 +194,15 @@ def findWallsForBoundaries(flowRegion,mesh):
                         corners["dir"].append(cornerDirections[m])
 
     # Constant y
-    cornersMatrix = np.zeros((mesh.nx, mesh.ny, mesh.nz, 4), dtype=bool)
+    cornersMatrix = np.zeros((mesh['nx'], mesh['ny'], mesh['nz'], 4), dtype=bool)
     cornersMatrix[:, :, :, 0] = wallUp & wallRight
     cornersMatrix[:, :, :, 1] = wallUp & wallLeft
     cornersMatrix[:, :, :, 2] = wallDown & wallRight
     cornersMatrix[:, :, :, 3] = wallDown & wallLeft
     cornerDirections = np.array([[0, 1, 1], [0, 1, -1], [0, -1, 1], [0, -1, -1]])
 
-    for j in range(mesh.ny):
-        for k in range(mesh.nz):
+    for j in range(mesh['ny']):
+        for k in range(mesh['nz']):
             for m in range(4):
                 cornerRow = cornersMatrix[:, j, k, m]
                 if np.any(cornerRow):
@@ -210,7 +213,7 @@ def findWallsForBoundaries(flowRegion,mesh):
                         corners["dir"].append(cornerDirections[m])
 
     # With 3 walls
-    cornersMatrix = np.zeros((mesh.nx, mesh.ny, mesh.nz, 8), dtype=bool)
+    cornersMatrix = np.zeros((mesh['nx'], mesh['ny'], mesh['nz'], 8), dtype=bool)
     cornersMatrix[:, :, :, 0] = wallFront & wallUp & wallRight
     cornersMatrix[:, :, :, 1] = wallFront & wallUp & wallLeft
     cornersMatrix[:, :, :, 2] = wallFront & wallDown & wallRight
@@ -231,8 +234,8 @@ def findWallsForBoundaries(flowRegion,mesh):
 
     # Find wall limits in x
     insideWalls = []
-    for k in range(mesh.nz):
-        for j in range(mesh.ny):
+    for k in range(mesh['nz']):
+        for j in range(mesh['ny']):
             wallBegins = np.where([isWall[0, j, k], np.diff(isWall[:, j, k]) == 1])[0]
             wallEnds = np.where([np.diff(isWall[:, j, k]) == -1, isWall[-1, j, k]])[0]
             for i in range(len(wallBegins)):

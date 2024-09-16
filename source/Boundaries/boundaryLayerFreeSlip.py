@@ -8,8 +8,8 @@ def boundaryLayerFreeSlip(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0
     # To be called from getBoundaryConditions
 
     # Inflow
-    if not mesh.x.periodic:
-        if mesh.X[0] <= 0:
+    if not mesh['X'].periodic:
+        if mesh['X'][0] <= 0:
             # u
             var.append('u')
             type.append('dir')
@@ -62,7 +62,7 @@ def boundaryLayerFreeSlip(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0
                 flowType.disturb = []
             else:
                 flowType.disturb.extend([{}])
-            flowType.disturb[0]['x'] = [mesh.X[0], mesh.X[0]]
+            flowType.disturb[0]['x'] = [mesh['X'][0], mesh['X'][0]]
             flowType.disturb[0]['y'] = [-np.inf, np.inf]
             flowType.disturb[0]['z'] = [-np.inf, np.inf]
             flowType.disturb[0]['var'] = 'UVRWE'
@@ -143,7 +143,7 @@ def boundaryLayerFreeSlip(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0
     zi.append(1)
     zf.append(mesh.nz)
 
-    if not mesh.y.periodic:
+    if not mesh['Y'].periodic:
         # Outerflow
         # u
         var.append('u')
@@ -331,9 +331,9 @@ def boundaryLayerFreeSlip(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0
     # Find which nodes will actually contain a flow and which ones will be in or at a wall
     flowRegion = np.ones((mesh.nx, mesh.ny, mesh.nz), dtype=bool)
 
-    if not mesh.y.periodic:
+    if not mesh['Y'].periodic:
         # Add flat plate
-        wallJ = np.argmin(np.abs(mesh.Y))
+        wallJ = np.argmin(np.abs(mesh['Y']))
         flowRegion[:, :wallJ, :] = False
 
     # Add cavities to the flow region
@@ -343,7 +343,7 @@ def boundaryLayerFreeSlip(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0
             y = flowType.cav[i].y
             z = flowType.cav[i].z
             
-            flowRegion[(mesh.X > x[0]) & (mesh.X < x[1]), (mesh.Y > y[0]) & (mesh.Y < y[1]), (mesh.Z > z[0]) & (mesh.Z < z[1])] = True
+            flowRegion[(mesh['X'] > x[0]) & (mesh['X'] < x[1]), (mesh['Y'] > y[0]) & (mesh['Y'] < y[1]), (mesh.Z > z[0]) & (mesh.Z < z[1])] = True
 
     # Remove roughnesses from the flow
     if hasattr(flowType, 'rug'):
@@ -352,7 +352,7 @@ def boundaryLayerFreeSlip(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,P0
             y = flowType.rug[i].y
             z = flowType.rug[i].z
             
-            flowRegion[(mesh.X >= x[0]) & (mesh.X <= x[1]), (mesh.Y >= y[0]) & (mesh.Y <= y[1]), (mesh.Z >= z[0]) & (mesh.Z <= z[1])] = False
+            flowRegion[(mesh['X'] >= x[0]) & (mesh['X'] <= x[1]), (mesh['Y'] >= y[0]) & (mesh['Y'] <= y[1]), (mesh.Z >= z[0]) & (mesh.Z <= z[1])] = False
 
     # Get walls               # lembrete: o caractere _ ignora saídas específicas retornadas de uma função (gigiaero - 29/08/2024)
     corners,insideWalls,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits =  findWallsForBoundaries(flowRegion,mesh)

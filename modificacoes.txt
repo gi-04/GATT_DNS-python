@@ -40,3 +40,5 @@ lista dos arquivos modificados até o momento. entende-se como não modificados 
 ./source/Boundaries/BoundaryLayerAdiabatic.py  -  em "add flat plate"
 ./source/Boundaries/BoundaryLayerIsothermal.py  -  mesmo que acima
 ./source/Boundaries/BoudaryLayerIsothermalPressureInlet.py  -  mesmo que acima
+./source/Boundaries/*  -  checar as conversoes dos structs como apontado no meu comentario no inicio de boundaryLayerAdiabatic.py
+./source/findWallsForBoundaries  -  em "find and remove infinitely thin walls", logo no inicio, e tambem "find walls"

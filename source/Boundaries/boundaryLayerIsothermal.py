@@ -8,7 +8,7 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
     # To be called from getBoundaryConditions
 
     # Inflow
-    if mesh.X[0] <= 0:
+    if mesh['X'][0] <= 0:
         # u
         var.append('u')
         type.append('dir')
@@ -17,9 +17,9 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         xi.append(1)
         xf.append(1)
         yi.append(1)
-        yf.append(mesh.ny)
+        yf.append(mesh['ny'])
         zi.append(1)
-        zf.append(mesh.nz)
+        zf.append(mesh['nz'])
 
         # v
         var.append('v')
@@ -29,9 +29,9 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         xi.append(1)
         xf.append(1)
         yi.append(1)
-        yf.append(mesh.ny)
+        yf.append(mesh['ny'])
         zi.append(1)
-        zf.append(mesh.nz)
+        zf.append(mesh['nz'])
 
         # w
         var.append('w')
@@ -41,9 +41,9 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         xi.append(1)
         xf.append(1)
         yi.append(1)
-        yf.append(mesh.ny)
+        yf.append(mesh['ny'])
         zi.append(1)
-        zf.append(mesh.nz)
+        zf.append(mesh['nz'])
 
         # e
         var.append('e')
@@ -53,16 +53,16 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         xi.append(1)
         xf.append(1)
         yi.append(1)
-        yf.append(mesh.ny)
+        yf.append(mesh['ny'])
         zi.append(1)
-        zf.append(mesh.nz)
+        zf.append(mesh['nz'])
     else:
         if not hasattr(flowType, 'disturb'):
             flowType.disturb = []
         else:
             flowType.disturb.extend([])
         flowType.disturb.append({})
-        flowType.disturb[0]['x'] = [mesh.X[0], mesh.X[0]]
+        flowType.disturb[0]['x'] = [mesh['X'][0], mesh['X'][0]]
         flowType.disturb[0]['y'] = [-np.inf, np.inf]
         flowType.disturb[0]['z'] = [-np.inf, np.inf]
         flowType.disturb[0]['var'] = 'UVRWE'
@@ -78,9 +78,9 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
     xi.append(1)
     xf.append(1)
     yi.append(1)
-    yf.append(mesh.ny)
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # Outflow
     # u
@@ -88,60 +88,60 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
     type.append('sec')
     dir.append('xf')
     val.append(0)
-    xi.append(mesh.nx)
-    xf.append(mesh.nx)
+    xi.append(mesh['nx'])
+    xf.append(mesh['nx'])
     yi.append(1)
-    yf.append(mesh.ny)
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # v
     var.append('v')
     type.append('sec')
     dir.append('xf')
     val.append(0)
-    xi.append(mesh.nx)
-    xf.append(mesh.nx)
+    xi.append(mesh['nx'])
+    xf.append(mesh['nx'])
     yi.append(1)
-    yf.append(mesh.ny)
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # w
     var.append('w')
     type.append('sec')
     dir.append('xf')
     val.append(0)
-    xi.append(mesh.nx)
-    xf.append(mesh.nx)
+    xi.append(mesh['nx'])
+    xf.append(mesh['nx'])
     yi.append(1)
-    yf.append(mesh.ny)
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # e
     var.append('e')
     type.append('sec')
     dir.append('xf')
     val.append(0)
-    xi.append(mesh.nx)
-    xf.append(mesh.nx)
+    xi.append(mesh['nx'])
+    xf.append(mesh['nx'])
     yi.append(1)
-    yf.append(mesh.ny)
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # p
     var.append('p')
     type.append('dir')
     dir.append('xf')
     val.append(P0)
-    xi.append(mesh.nx)
-    xf.append(mesh.nx)
+    xi.append(mesh['nx'])
+    xf.append(mesh['nx'])
     yi.append(1)
-    yf.append(mesh.ny)
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # Outerflow
     # u
@@ -150,11 +150,11 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
     dir.append('yf')
     val.append(0)
     xi.append(1)
-    xf.append(mesh.nx)
-    yi.append(mesh.ny)
-    yf.append(mesh.ny)
+    xf.append(mesh['nx'])
+    yi.append(mesh['ny'])
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # v
     var.append('v')
@@ -162,11 +162,11 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
     dir.append('yf')
     val.append(0)
     xi.append(1)
-    xf.append(mesh.nx)
-    yi.append(mesh.ny)
-    yf.append(mesh.ny)
+    xf.append(mesh['nx'])
+    yi.append(mesh['ny'])
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # w
     var.append('w')
@@ -174,11 +174,11 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
     dir.append('yf')
     val.append(0)
     xi.append(1)
-    xf.append(mesh.nx)
-    yi.append(mesh.ny)
-    yf.append(mesh.ny)
+    xf.append(mesh['nx'])
+    yi.append(mesh['ny'])
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # e
     var.append('e')
@@ -186,11 +186,11 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
     dir.append('yf')
     val.append(0)
     xi.append(1)
-    xf.append(mesh.nx)
-    yi.append(mesh.ny)
-    yf.append(mesh.ny)
+    xf.append(mesh['nx'])
+    yi.append(mesh['ny'])
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # p
     var.append('p')
@@ -198,23 +198,23 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
     dir.append('yf')
     val.append(0)
     xi.append(1)
-    xf.append(mesh.nx)
-    yi.append(mesh.ny)
-    yf.append(mesh.ny)
+    xf.append(mesh['nx'])
+    yi.append(mesh['ny'])
+    yf.append(mesh['ny'])
     zi.append(1)
-    zf.append(mesh.nz)
+    zf.append(mesh['nz'])
 
     # Outerflow for non-periodic 3D
-    if mesh.nz > 1 and not mesh.z.periodic:
+    if mesh['nz'] > 1 and not mesh['Z'].periodic:
         # u
         var.append('u')
         type.append('neu')
         dir.append('zi')
         val.append(0)
         xi.append(1)
-        xf.append(mesh.nx)
+        xf.append(mesh['nx'])
         yi.append(1)
-        yf.append(mesh.ny)
+        yf.append(mesh['ny'])
         zi.append(1)
         zf.append(1)
 
@@ -224,9 +224,9 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         dir.append('zi')
         val.append(0)
         xi.append(1)
-        xf.append(mesh.nx)
+        xf.append(mesh['nx'])
         yi.append(1)
-        yf.append(mesh.ny)
+        yf.append(mesh['ny'])
         zi.append(1)
         zf.append(1)
 
@@ -236,9 +236,9 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         dir.append('zi')
         val.append(0)
         xi.append(1)
-        xf.append(mesh.nx)
+        xf.append(mesh['nx'])
         yi.append(1)
-        yf.append(mesh.ny)
+        yf.append(mesh['ny'])
         zi.append(1)
         zf.append(1)
 
@@ -248,9 +248,9 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         dir.append('zi')
         val.append(0)
         xi.append(1)
-        xf.append(mesh.nx)
+        xf.append(mesh['nx'])
         yi.append(1)
-        yf.append(mesh.ny)
+        yf.append(mesh['ny'])
         zi.append(1)
         zf.append(1)
 
@@ -260,9 +260,9 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         dir.append('zi')
         val.append(0)
         xi.append(1)
-        xf.append(mesh.nx)
+        xf.append(mesh['nx'])
         yi.append(1)
-        yf.append(mesh.ny)
+        yf.append(mesh['ny'])
         zi.append(1)
         zf.append(1)
         
@@ -272,11 +272,11 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         dir.append('zf')
         val.append(0)
         xi.append(1)
-        xf.append(mesh.nx)
+        xf.append(mesh['nx'])
         yi.append(1)
-        yf.append(mesh.ny)
-        zi.append(mesh.nz)
-        zf.append(mesh.nz)
+        yf.append(mesh['ny'])
+        zi.append(mesh['nz'])
+        zf.append(mesh['nz'])
 
         # v
         var.append('v')
@@ -284,11 +284,11 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         dir.append('zf')
         val.append(0)
         xi.append(1)
-        xf.append(mesh.nx)
+        xf.append(mesh['nx'])
         yi.append(1)
-        yf.append(mesh.ny)
-        zi.append(mesh.nz)
-        zf.append(mesh.nz)
+        yf.append(mesh['ny'])
+        zi.append(mesh['nz'])
+        zf.append(mesh['nz'])
 
         # w
         var.append('w')
@@ -296,11 +296,11 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         dir.append('zf')
         val.append(0)
         xi.append(1)
-        xf.append(mesh.nx)
+        xf.append(mesh['nx'])
         yi.append(1)
-        yf.append(mesh.ny)
-        zi.append(mesh.nz)
-        zf.append(mesh.nz)
+        yf.append(mesh['ny'])
+        zi.append(mesh['nz'])
+        zf.append(mesh['nz'])
 
         # e
         var.append('e')
@@ -308,11 +308,11 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         dir.append('zf')
         val.append(0)
         xi.append(1)
-        xf.append(mesh.nx)
+        xf.append(mesh['nx'])
         yi.append(1)
-        yf.append(mesh.ny)
-        zi.append(mesh.nz)
-        zf.append(mesh.nz)
+        yf.append(mesh['ny'])
+        zi.append(mesh['nz'])
+        zf.append(mesh['nz'])
 
         # p
         var.append('p')
@@ -320,18 +320,18 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
         dir.append('zf')
         val.append(0)
         xi.append(1)
-        xf.append(mesh.nx)
+        xf.append(mesh['nx'])
         yi.append(1)
-        yf.append(mesh.ny)
-        zi.append(mesh.nz)
-        zf.append(mesh.nz)
+        yf.append(mesh['ny'])
+        zi.append(mesh['nz'])
+        zf.append(mesh['nz'])
 
     # Define flow region
     # Find which nodes will actually contain a flow and which ones will be in or at a wall
-    flowRegion = np.ones((mesh.nx, mesh.ny, mesh.nz), dtype=bool)
+    flowRegion = np.ones((mesh['nx'], mesh['ny'], mesh['nz']), dtype=bool)
 
     # Add flat plate
-    wallJ = np.argmin(np.abs(mesh.Y), axis=0)
+    wallJ = np.argmin(np.abs(mesh['Y']), axis=0)
     flowRegion[:, :wallJ, :] = False
 
     # Add cavities to the flow region
@@ -341,9 +341,9 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
             y = flowType.cav[i].y
             z = flowType.cav[i].z
             
-            flowRegion[(mesh.X > x[0]) & (mesh.X < x[1]), 
-                    (mesh.Y > y[0]) & (mesh.Y < y[1]), 
-                    (mesh.Z > z[0]) & (mesh.Z < z[1])] = True
+            flowRegion[(mesh['X'] > x[0]) & (mesh['X'] < x[1]), 
+                    (mesh['Y'] > y[0]) & (mesh['Y'] < y[1]), 
+                    (mesh['Z'] > z[0]) & (mesh['Z'] < z[1])] = True
 
     # Remove roughnesses from the flow
     if hasattr(flowType, 'rug'):
@@ -352,25 +352,25 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
             y = flowType.rug[i].y
             z = flowType.rug[i].z
             
-            flowRegion[(mesh.X >= x[0]) & (mesh.X <= x[1]), 
-                    (mesh.Y >= y[0]) & (mesh.Y <= y[1]), 
-                    (mesh.Z >= z[0]) & (mesh.Z <= z[1])] = False
+            flowRegion[(mesh['X'] >= x[0]) & (mesh['X'] <= x[1]), 
+                    (mesh['Y'] >= y[0]) & (mesh['Y'] <= y[1]), 
+                    (mesh['Z'] >= z[0]) & (mesh['Z'] <= z[1])] = False
 
     # Get walls
     corners,insideWalls,wallFrontLimits,wallBackLimits,wallUpLimits,wallDownLimits,wallRightLimits,wallLeftLimits,insideWalls = findWallsForBoundaries(flowRegion,mesh)
 
     # Create wall for free-slip region
-    if mesh.X[0] < 0:
-        wallUpLimits[:, 0] = np.maximum(wallUpLimits[:, 0], np.where(mesh.X >= 0)[0][0])  # Move existing walls
+    if mesh['X'][0] < 0:
+        wallUpLimits[:, 0] = np.maximum(wallUpLimits[:, 0], np.where(mesh['X'] >= 0)[0][0])  # Move existing walls
         wallUpLimits = np.vstack((wallUpLimits, 
-                                np.array([[1, np.where(mesh.X < 0)[0][-1], 
-                                            np.where(mesh.Y >= 0)[0][0], 
-                                            np.where(mesh.Y >= 0)[0][0], 
-                                            mesh.nz, 1]])))
+                                np.array([[1, np.where(mesh['X'] < 0)[0][-1], 
+                                            np.where(mesh['Y'] >= 0)[0][0], 
+                                            np.where(mesh['Y'] >= 0)[0][0], 
+                                            mesh['nz'], 1]])))
         
-        mesh.x.breakPoint = np.array([np.where(mesh.X < 0)[0][-1], 
-                                    np.where(mesh.Y >= 0)[0][0], 
-                                    mesh.nz])
+        mesh['X'].breakPoint = np.array([np.where(mesh['X'] < 0)[0][-1], 
+                                    np.where(mesh['Y'] >= 0)[0][0], 
+                                    mesh['nz']])
 
     # Add walls to boundary conditions
     for i in range(1, 7):
@@ -398,7 +398,7 @@ def boundaryLayerIsothermal(mesh,var,type,dir,val,xi,xf,yi,yf,zi,zf,flowType,E0,
             
 
     # Add free slip wall, it is the last up facing wall
-    if mesh.X[0] < 0:
+    if mesh['X'][0] < 0:
         var.append('u')
         type.append('neu')
         dir.append('yi')

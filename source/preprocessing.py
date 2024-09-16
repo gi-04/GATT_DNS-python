@@ -22,7 +22,7 @@ from writeFortranBoundaries import writeFortranBoundaries
 
 # transformei este script em uma função (gigiaero - 27/08/2024)
 
-def preprocessing(mesh,flowType,flowParameters,domain,numMethods,tridimensional,p_row,p_col,logAll,caseName):
+def preprocessing(mesh,flowType,flowParameters,domain,numMethods,time,tridimensional,p_row,p_col,logAll,caseName):
 
     # Generate mesh
     # Add fixed points to mesh structure

@@ -88,7 +88,7 @@ def runDNS(caseFile='parameters', extraParameters=None, nargout=1):
                 os.remove(os.path.join(f'{caseName}/bin', file))
 
     print('Running preprocessor')
-    mesh,boundary,genInitialFlow = preprocessing(mesh,flowType,flowParameters,domain,numMethods,tridimensional,p_row,p_col,logAll,caseName)
+    mesh,boundary,genInitialFlow = preprocessing(mesh,flowType,flowParameters,domain,numMethods,time,tridimensional,p_row,p_col,logAll,caseName)
 
     print(f'Mesh size: {mesh["nx"]} x {mesh["ny"]} x {mesh["nz"]}')
 
@@ -196,7 +196,7 @@ def runDNS(caseFile='parameters', extraParameters=None, nargout=1):
             info[var] = allVars[var]
 
         return flowHandles, info
-
+'''
 
 def unpackStruct(structure):
     varList = []
@@ -208,8 +208,6 @@ def unpackStruct(structure):
         else:
             varList.append(varName)
     return varList
-
-    '''
 
 def unpackParametersModule(module):
     delta = module.delta
